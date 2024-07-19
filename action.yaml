@@ -1,0 +1,136 @@
+name: "Deploy using Terraform"
+description: "Composite github action to use in a workflow for Terraform plan/apply steps"
+inputs:
+  config_directory:
+    type: string
+    description: "current directory with all configuration files"
+    required: false
+    default: "."
+  terraform_version:
+    type: string
+    description: "Terraform version"
+    required: false
+    default: "latest"
+  terraform_action:
+    type: string
+    description: "Terraform action to perform 'plan', 'apply', 'destroy'"
+    required: true
+  environment:
+    type: string
+    description: "Environment to use for the Terraform action 'development', 'staging', 'production'"
+    required: true
+  variables_directory:
+    type: string
+    description: "Relative Path to directory with terraform variable files"
+    required: false
+    default: "variables"
+  backend_config_directory:
+    type: string
+    description: "Relative Path to directory with terraform backend config files"
+    required: false
+    default: "backends"
+outputs:
+  terraform_plan:
+    description: "Terraform plan output"
+    value: ${{ steps.terraform_plan_output.outputs.plan }}
+runs:
+  using: "composite"
+  steps:
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+    - name: Terraform Initialization
+      id: terraform_init
+      working-directory: ${{ inputs.config_directory }}
+      run: terraform init -backend-config=${{ inputs.backends_directory }}/${{ inputs.environment }}.tfvars
+      shell: bash
+
+    - name: Terraform Format
+      id: terraform_fmt
+      working-directory: ${{ inputs.config_directory }}
+      run: terraform fmt -recursive -check
+      shell: bash
+
+    - name: Terraform validation
+      id: terraform_validate
+      working-directory: ${{ inputs.config_directory }}
+      run: terraform validate
+      shell: bash
+
+    - name: Terraform plan
+      id: terraform_plan
+      working-directory: ${{ inputs.config_directory }}
+      if: ${{ inputs.terraform_action == 'plan' }}
+      run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color
+      shell: bash
+
+    - if: ${{ inputs.terraform_action == 'plan' && steps.terraform_plan.outcome == 'success' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      env:
+        PLAN: "terraform\n${{ steps.terraform_plan.outputs.stdout}}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          // 1. Retrieve existing bot comments for the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })
+          const botComment = comments.find(comment => {
+            return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+          })
+
+          // 2. Prepare format of the comment
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.terraform_fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.terraform_init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.terraform_validate.outcome }}\`
+          <details><summary>Validation Output</summary>
+
+          \`\`\`\n
+          ${{ steps.terraform_validate.outputs.stdout }}
+          \`\`\`
+
+          </details>
+
+          #### Terraform Plan 📖\`${{ steps.terraform_plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+          // 3. If we have a comment, update it, otherwise create a new one
+          if (botComment) {
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: output
+            })
+          } else {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+          }
+
+    - name: Terraform Apply
+      if: ${{ inputs.terraform_action == 'apply' }}
+      working-directory: ${{ inputs.config_directory }}
+      run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+      shell: bash
+
+
+
+
+
+
+
