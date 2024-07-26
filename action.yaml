@@ -42,7 +42,7 @@ runs:
     - name: Terraform Initialization
       id: terraform_init
       working-directory: ${{ inputs.config_directory }}
-      run: terraform init -backend-config=${{ inputs.backends_directory }}/${{ inputs.environment }}.tfvars
+      run: terraform init -backend-config=${{ inputs.backend_config_directory }}/${{ inputs.environment }}.tfvars
       shell: bash
 
     - name: Terraform Format
