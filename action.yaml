@@ -61,7 +61,7 @@ runs:
       id: terraform_plan
       working-directory: ${{ inputs.config_directory }}
       if: ${{ inputs.terraform_action == 'plan' }}
-      run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color
+      run: terraform ${{ inputs.terraform_action }} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color
       shell: bash
 
     - if: ${{ inputs.terraform_action == 'plan' && steps.terraform_plan.outcome == 'success' && github.event_name == 'pull_request' }}
@@ -124,13 +124,13 @@ runs:
     - name: Terraform Apply
       if: ${{ inputs.terraform_action == 'apply' }}
       working-directory: ${{ inputs.config_directory }}
-      run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+      run: terraform ${{ inputs.terraform_action }} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
       shell: bash
 
     - name: Terraform Destory
       if: ${{ inputs.terraform_action == 'destory' }}
       working-directory: ${{ inputs.config_directory }}
-      run: terraform ${{ inputs.terraform_action}} -input=false -no-color -auto-approve
+      run: terraform ${{ inputs.terraform_action }} -input=false -no-color -auto-approve
       shell: bash
 
 
