@@ -23,12 +23,12 @@ inputs:
     type: string
     description: "Relative Path to directory with terraform variable files"
     required: false
-    default: "variables"
+    default: "../variables"
   backend_config_directory:
     type: string
     description: "Relative Path to directory with terraform backend config files"
     required: false
-    default: "terraformbackends"
+    default: "../terraformbackends"
 outputs:
   terraform_plan:
     description: "Terraform plan output"
