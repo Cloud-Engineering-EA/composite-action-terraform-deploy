@@ -131,6 +131,7 @@ runs:
       if: ${{ inputs.terraform_action == 'destroy' }}
       working-directory: ${{ inputs.config_directory }}
       run: terraform apply -destroy -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+      shell: bash
 
 
 
