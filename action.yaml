@@ -1,9 +1,9 @@
-name: "Deploy using Terraform"
+name: "Infrastructure Deployment using Terraform"
 description: "Composite github action to use in a workflow for Terraform plan/apply steps"
 inputs:
   config_directory:
     type: string
-    description: "current directory with all configuration files"
+    description: "terraform config directory with all configuration files"
     required: false
     default: "."
   terraform_version:
@@ -28,7 +28,7 @@ inputs:
     type: string
     description: "Relative Path to directory with terraform backend config files"
     required: false
-    default: "backends"
+    default: "terraformbackends"
 outputs:
   terraform_plan:
     description: "Terraform plan output"
