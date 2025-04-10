@@ -13,11 +13,11 @@ inputs:
     default: "latest"
   terraform_action:
     type: string
-    description: "Terraform action to perform 'plan', 'apply', 'destroy'"
+    description: "Terraform action to perform 'plan', 'apply', 'destroy' "
     required: true
   environment:
     type: string
-    description: "Environment to use for the Terraform action 'development', 'staging', 'production'"
+    description: "Environment to use for the Terraform action 'development', 'staging', 'production' "
     required: true
   variables_directory:
     type: string
@@ -127,11 +127,12 @@ runs:
       run: terraform ${{ inputs.terraform_action }} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
       shell: bash
 
-    - name: Terraform Destory
-      if: ${{ inputs.terraform_action == 'destory' }}
+    - name: Terraform destroy
+      if: ${{ inputs.terraform_action == 'destroy' }}
       working-directory: ${{ inputs.config_directory }}
-      run: terraform ${{ inputs.terraform_action }} -input=false -no-color -auto-approve
-      shell: bash
+      run: terraform apply -destroy -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+
+
 
 
 
