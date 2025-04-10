@@ -124,7 +124,7 @@ runs:
     - name: Terraform Apply
       if: ${{ inputs.terraform_action == 'apply' }}
       working-directory: ${{ inputs.config_directory }}
-      run: terraform ${{ inputs.terraform_action }} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+      run: terraform ${{ inputs.terraform_action }} -destroy -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
       shell: bash
 
     - name: Terraform destroy
