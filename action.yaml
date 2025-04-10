@@ -127,6 +127,11 @@ runs:
       run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
       shell: bash
 
+    - name: Terraform Destory
+      if: ${{ inputs.terraform_action == 'destory' }}
+      working-directory: ${{ inputs.config_directory }}
+      run: terraform ${{ inputs.terraform_action}} -var-file=${{ inputs.variables_directory }}/${{ inputs.environment }}.tfvars -input=false -no-color -auto-approve
+      shell: bash
 
 
 
